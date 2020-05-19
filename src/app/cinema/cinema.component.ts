@@ -12,6 +12,8 @@ export class CinemaComponent implements OnInit {
   public salles;
   public currentVille;
   public currentCinema;
+  public currentProjection: any;
+  public selectedTicket: any [];
   constructor(public cinemaService: CinemaService) {}
 
   ngOnInit() {
@@ -21,6 +23,8 @@ export class CinemaComponent implements OnInit {
   }
   getCinemaByCity(ville) {
     this.currentVille = ville;
+    this.salles = undefined ;
+    this.currentProjection = undefined;
     return this.cinemaService.getCinema(ville).subscribe(
       data => {
         this.cinemas = data;
@@ -32,6 +36,7 @@ export class CinemaComponent implements OnInit {
   }
   getSalles(cinema) {
     this.currentCinema = cinema;
+    this.currentProjection = undefined;
     return this.cinemaService.getSalles(cinema).subscribe(
       data => {
         this.salles = data;
@@ -51,4 +56,45 @@ export class CinemaComponent implements OnInit {
       }
     );
   }
+  onGetTicketsPlaces(p) {
+    this.currentProjection = p;
+    this.cinemaService.getTicketsPlaces(p).subscribe(data => {
+        this.currentProjection.tickets = data;
+        this.selectedTicket = [];
+        console.log(data);
+
+    }, err => {
+        console.log(err);
+    }
+    );
+  }
+
+  onSelectedTicket(t) {
+    if (!t.selected) {
+    t.selected = true;
+    this.selectedTicket.push(t);
+  } else if (t.selected) {
+      t.selected = false;
+      this.selectedTicket.splice(this.selectedTicket.indexOf(t), 1);
+  }
+  }
+
+  getBtnClass(t) {
+     let str = 'btn ticket ';
+     if (t.reserve === true) {
+       str += 'btn-danger' ;
+     } else if (t.selected ) {
+      str += 'btn-warning';
+     } else { str += 'btn-success'; }
+     return str;
+  }
+  onPayTicket(dataForm) {
+    let tickets = [];
+    this.selectedTicket.forEach(t => {
+      tickets.push( t.idTicket );
+    });
+    dataForm.ticket = tickets;
+    console.log(dataForm);
+  }
+
 }

@@ -1,15 +1,15 @@
 <div class="container">
 
     <div class="row">
-        <div class="col-md-4">
+        <div class="col-md-3">
             <ul *ngIf="villes" class="list-group">
                 <li [ngClass]="ville==currentVille?'active':''" *ngFor="let ville of villes._embedded.villes" class="list-group-item clickable" (click)="getCinemaByCity(ville)">
                     {{ville.nomVille}}
                 </li>
             </ul>
         </div>
-        <div class="col-md-8">
-            <div class="panel panel-default">
+        <div class="col-md-9">
+            <div class="panel panel-default" *ngIf="cinemas">
                 <div class="panel-heading">Cinema</div>
                 <div class="panel-body">
                     <ul *ngIf="cinemas" class="nav nav-pills">
@@ -22,8 +22,39 @@
                                 <div class="panel panel-default">
                                     <div class="panel-heading">{{salle.nomSalle}}</div>
                                     <div class="panel-body" *ngIf="salle.projections">
-                                        <img src="{{ cinemaService.host +'/images/' + salle.projections._embedded.projectionFilms[1].film.idFilm}}" />
+                                        <div class="col-md-4">
+                                            <img id="imgFilm" src="{{ cinemaService.host +'/images/' + salle.projections._embedded.projectionFilms[1].film.idFilm}}" />
+                                        </div>
+                                        <div class="col-md-8">
+                                            <ul class="list-group">
+                                                <li class="list-group-item">Séances : </li>
+                                                <li [ngClass]="p==currentProjection?'active':''" (click)="onGetTicketsPlaces(p)" *ngFor="let p of salle.projections._embedded.projectionFilms" class="list-group-item clickable">
+                                                    {{p.seance.heureDebut}} => Prix : {{p.prix| number:'0.00'}} DH
+                                                </li>
+                                            </ul>
+                                        </div>
+                                        <div *ngIf="currentProjection && currentProjection.salle.idSalle == salle.idSalle">
+                                            <div class="row" *ngIf="currentProjection.tickets">
+                                                <button class="{{getBtnClass(t)}}" (click)="onSelectedTicket(t)" *ngFor="let t of currentProjection.tickets._embedded.tickets" [disabled]="t.reserve">
+                                                {{t.place.numero}}
+                                              </button>
+                                            </div>
+                                            <div *ngIf="selectedTicket.length > 0">
+                                                <form #f="ngForm" (ngSubmit)="onPayTicket(f.value)">
+                                                    <div class="form-group">
+                                                        <label class="control-label"> Nom Client : </label>
+                                                        <input class="form-control" type="text" name="nomClient" ngModel>
+                                                    </div>
+                                                    <div class="form-group">
+                                                        <label class="control-label"> Code Paiement : </label>
+                                                        <input class="form-control" type="text" name="codePaiement" ngModel>
+                                                    </div>
+                                                    <button class="btn btn-primary" type="submit"> Payer</button>
+                                                </form>
+                                            </div>
+                                        </div>
                                     </div>
+
                                 </div>
                             </div>
                         </div>
